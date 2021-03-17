@@ -32,6 +32,13 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
                 .map(RPtr::toJs)
                 .pour(promise);
     }
+    @ReactMethod
+    public final void makeDaedalusBootstrapWitness(String txBodyHash, String addr, String key, Promise promise) {
+        Native.I
+                .makeDaedalusBootstrapWitness(new RPtr(txBodyHash), new RPtr(addr), new RPtr(key))
+                .map(RPtr::toJs)
+                .pour(promise);
+    }
 
     @ReactMethod
     public final void makeVkeyWitness(String txBodyHash, String sk, Promise promise) {
@@ -54,21 +61,6 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
         Native.I
                 .minAdaRequired(new RPtr(assets), new RPtr(minimumUtxoVal))
                 .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void encodeJsonStrToMetadatum(String json, Integer schema, Promise promise) {
-        Native.I
-                .encodeJsonStrToMetadatum(json, schema)
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void decodeMetadatumToJsonStr(String metadatum, Integer schema, Promise promise) {
-        Native.I
-                .decodeMetadatumToJsonStr(new RPtr(metadatum), schema)
                 .pour(promise);
     }
 
@@ -193,23 +185,6 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
                 .pour(promise);
     }
 
-    // Int
-
-    @ReactMethod
-    public final void intNew(String x, Promise promise) {
-        Native.I
-                .intNew(new RPtr(x))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void intAsi32(String intPtr, Promise promise) {
-        Native.I
-                .intAsi32(new RPtr(intPtr))
-                .pour(promise);
-    }
-
     // AssetName
 
     @ReactMethod
@@ -266,6 +241,13 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
     public final void assetNamesNew(Promise promise) {
         Native.I
                 .assetNamesNew()
+                .map(RPtr::toJs)
+                .pour(promise);
+    }
+    @ReactMethod
+    public final void byronAddressFromIcarusKey(String bip32PublicKey, Integer network, Promise promise) {
+        Native.I
+                .byronAddressFromIcarusKey(new RPtr(bip32PublicKey), network)
                 .map(RPtr::toJs)
                 .pour(promise);
     }
@@ -1203,6 +1185,7 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
                 .rewardAddressesAdd(new RPtr(rewardAddresses), new RPtr(item))
                 .pour(promise);
     }
+    
 
     // UnitInterval
 
@@ -1827,227 +1810,15 @@ public class HaskellShelleyModule extends ReactContextBaseJavaModule {
                 .map(RPtr::toJs)
                 .pour(promise);
     }
-
-    // MetadataMap
-
+    
+    //
     @ReactMethod
-    public final void metadataMapNew(Promise promise) {
+    public final void legacyDaedalusPrivateKeyFromBytes(String bytes, Promise promise) {
         Native.I
-                .metadataMapNew()
+                .legacyDaedalusPrivateKeyFromBytes(Base64.decode(bytes, Base64.DEFAULT))
                 .map(RPtr::toJs)
                 .pour(promise);
     }
 
-    @ReactMethod
-    public final void metadataMapLen(String metadataMap, Promise promise) {
-        Native.I
-                .metadataMapLen(new RPtr(metadataMap))
-                .map(Long::intValue)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataMapInsert(String metadataMap, String key, String value, Promise promise) {
-        Native.I
-                .metadataMapInsert(new RPtr(metadataMap), new RPtr(key), new RPtr(value))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataMapGet(String metadataMap, String key, Promise promise) {
-        Native.I
-                .metadataMapGet(new RPtr(metadataMap), new RPtr(key))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataMapKeys(String metadataMap, Promise promise) {
-        Native.I
-                .metadataMapKeys(new RPtr(metadataMap))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    // MetadataList
-
-    @ReactMethod
-    public final void metadataListNew(Promise promise) {
-        Native.I
-                .metadataListNew()
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataListLen(String metadataList, Promise promise) {
-        Native.I
-                .metadataListLen(new RPtr(metadataList))
-                .map(Long::intValue)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataListGet(String metadataList, Integer index, Promise promise) {
-        Native.I
-                .metadataListGet(new RPtr(metadataList), index)
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void metadataListAdd(String metadataList, String item, Promise promise) {
-        Native.I
-                .metadataListAdd(new RPtr(metadataList), new RPtr(item))
-                .pour(promise);
-    }
-
-    // TransactionMetadatum
-
-    @ReactMethod
-    public final void transactionMetadatumToBytes(String transactionMetadatum, Promise promise) {
-        Native.I
-                .transactionMetadatumToBytes(new RPtr(transactionMetadatum))
-                .map(bytes -> Base64.encodeToString(bytes, Base64.DEFAULT))
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumFromBytes(String bytes, Promise promise) {
-        Native.I
-                .transactionMetadatumFromBytes(Base64.decode(bytes, Base64.DEFAULT))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    // TransactionMetadatumLabels
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsToBytes(String transactionMetadatumLabels, Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsToBytes(new RPtr(transactionMetadatumLabels))
-                .map(bytes -> Base64.encodeToString(bytes, Base64.DEFAULT))
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsFromBytes(String bytes, Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsFromBytes(Base64.decode(bytes, Base64.DEFAULT))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsNew(Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsNew()
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsLen(String transactionMetadatumLabels, Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsLen(new RPtr(transactionMetadatumLabels))
-                .map(Long::intValue)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsGet(String transactionMetadatumLabels, Integer index, Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsGet(new RPtr(transactionMetadatumLabels), index)
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void transactionMetadatumLabelsAdd(String transactionMetadatumLabels, String item, Promise promise) {
-        Native.I
-                .transactionMetadatumLabelsAdd(new RPtr(transactionMetadatumLabels), new RPtr(item))
-                .pour(promise);
-    }
-
-    // GeneralTransactionMetadata
-
-    @ReactMethod
-    public final void generalTransactionMetadataToBytes(String generalTransactionMetadata, Promise promise) {
-        Native.I
-                .generalTransactionMetadataToBytes(new RPtr(generalTransactionMetadata))
-                .map(bytes -> Base64.encodeToString(bytes, Base64.DEFAULT))
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataFromBytes(String bytes, Promise promise) {
-        Native.I
-                .generalTransactionMetadataFromBytes(Base64.decode(bytes, Base64.DEFAULT))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataNew(Promise promise) {
-        Native.I
-                .generalTransactionMetadataNew()
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataLen(String generalTransactionMetadata, Promise promise) {
-        Native.I
-                .generalTransactionMetadataLen(new RPtr(generalTransactionMetadata))
-                .map(Long::intValue)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataInsert(String generalTransactionMetadata, String key, String value, Promise promise) {
-        Native.I
-                .generalTransactionMetadataInsert(new RPtr(generalTransactionMetadata), new RPtr(key), new RPtr(value))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataGet(String generalTransactionMetadata, String key, Promise promise) {
-        Native.I
-                .generalTransactionMetadataGet(new RPtr(generalTransactionMetadata), new RPtr(key))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    @ReactMethod
-    public final void generalTransactionMetadataKeys(String generalTransactionMetadata, Promise promise) {
-        Native.I
-                .generalTransactionMetadataKeys(new RPtr(generalTransactionMetadata))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    // TransactionMetadata
-
-    @ReactMethod
-    public final void transactionMetadataNew(String general, Promise promise) {
-        Native.I
-                .transactionMetadataNew(new RPtr(general))
-                .map(RPtr::toJs)
-                .pour(promise);
-    }
-
-    // misc
-
-    @ReactMethod
-    public final void ptrFree(String ptr, Promise promise) {
-        try {
-            (new RPtr(ptr)).free();
-            promise.resolve(null);
-        } catch (Throwable err) {
-            promise.reject(err);
-        }
-    }
 
 }

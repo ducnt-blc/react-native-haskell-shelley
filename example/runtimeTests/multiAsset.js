@@ -30,9 +30,10 @@ const test: () => void = async () => {
     assetName instanceof AssetName,
     'AssetName.new should return instance of AssetName',
   )
-  const assetNameFromRust = Buffer.from(await assetName.name(), 'hex').toString(
+  const assetNameFromRust = Buffer.from(
+    await assetName.name(),
     'hex',
-  )
+  ).toString('hex')
 
   assert(
     assetNameFromRust === nameHex,

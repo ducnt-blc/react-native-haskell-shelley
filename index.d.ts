@@ -36,25 +36,6 @@ export const min_ada_required: (
 ) => Promise<BigNum>;
 
 /**
-* @param {string} json
-* @returns {Promise<TransactionMetadatum>}
-*/
-export const encode_json_str_to_metadatum: (
-  json: string,
-  schema: MetadataJsonSchema,
-) => Promise<TransactionMetadatum>;
-
-/**
-* @param {TransactionMetadatum} metadatum
-* @param {MetadataJsonSchema} schema
-* @returns {Promise<string>}
-*/
-export const decode_metadatum_to_json_str: (
-  metadatum: TransactionMetadatum,
-  schema: MetadataJsonSchema,
-) => Promise<string>;
-
-/**
 * Generic u64 wrapper for platforms that don't support u64 or BigInt/etc
 * This is an unsigned type - no negative numbers.
 * Can be converted to/from plain rust
@@ -152,19 +133,6 @@ export class Value extends Ptr {
    * @returns {Promise<number>}
    */
   compare(rhs: Value): Promise<number>;
-}
-
-export class Int extends Ptr {
-  /**
-  * @param {BigNum} x
-  * @returns {Promise<Int>}
-  */
-  static async new(x: BigNum): Promise<Int>;
-
-  /**
-  * @returns {Promise<number>}
-  */
-  as_i32(): Promise<number>;
 }
 
 export class AssetName extends Ptr {
@@ -450,6 +418,17 @@ export class ByronAddress extends Ptr {
   * @returns {Promise<Uint8Array>}
   */
   attributes(): Promise<Uint8Array>;
+
+  /**
+  * @param {Bip32PublicKey} key
+  * @param {number} network
+  * @returns {Promise<ByronAddress | undefined>}
+  */
+  static async from_icarus_key(key, network) {
+      const keyPtr = Ptr._assertClass(key, Bip32PublicKey);
+      const ret = await HaskellShelley.byronAddressFromIcarusKey(keyPtr, network);
+      return Ptr._wrap(ret, ByronAddress);
+  }
 }
 
 export class Address extends Ptr {
@@ -756,6 +735,15 @@ export class StakeDelegation extends Ptr {
   * @returns {Promise<StakeDelegation>}
   */
   static new(stakeCredential, poolKeyHash): Promise<StakeDelegation>
+  static from_address(addr): Promise<ByronAddress | undefined>
+
+  /**
+  * @param {Bip32PublicKey} key
+  * @param {number} network
+  * @returns {Promise<ByronAddress | undefined>}
+  */
+ static from_icarus_key(key, network): Promise<ByronAddress | undefined>
+  
 }
 
 export class Certificate extends Ptr {
@@ -870,6 +858,10 @@ export class BaseAddress extends Ptr {
   * @returns {Promise<BaseAddress | undefined>}
   */
   static from_address(addr): Promise<BaseAddress | undefined>
+  /**
+  * @returns {Promise<Address>}
+  */
+  static to_address(): Promise<Address>
 }
 
 export class RewardAddress extends Ptr {
@@ -1154,6 +1146,8 @@ export class TransactionWitnessSet extends Ptr {
   set_vkeys(vkeywitnesses: Vkeywitnesses): Promise<void>
 }
 
+export class TransactionMetadata extends Ptr {}
+
 export class TransactionBody extends Ptr {
   /**
   * @param {Uint8Array} bytes
@@ -1213,7 +1207,11 @@ export class Transaction extends Ptr {
     body: TransactionBody,
     witnessSet: TransactionWitnessSet,
     metadata?: TransactionMetadata,
-  ): Promise<Transaction>;
+  ): Promise<Transaction>
+  /**
+    * @returns {Promise<Uint8Array>}
+    */
+  to_bytes(): Promise<Uint8Array>;
 }
 
 export class TransactionBuilder extends Ptr {
@@ -1402,176 +1400,19 @@ export class Withdrawals extends Ptr {
   keys(): Promise<RewardAddresses>;
 }
 
-export class MetadataMap extends Ptr {
-  /**
-  * @returns {Promise<MetadataMap>}
-  */
-  static new(): Promise<MetadataMap>;
 
-  /**
-  * @returns {Promise<number>}
-  */
-  len(): Promise<number>;
+export class LegacyDaedalusPrivateKey extends Ptr {
+    /**
+      * @param {Uint8Array} bytes
+      * @returns {Promise<Bip32PrivateKey>}
+      */
+    static from_bytes(bytes: Uint8Array): Promise<Bip32PrivateKey>;
 
-  /**
-  * @param {TransactionMetadatum} key
-  * @param {TransactionMetadatum} value
-  * @returns {Promise<TransactionMetadatum>}
-  */
-  insert(
-    key: TransactionMetadatum,
-    value: TransactionMetadatum,
-  ): Promise<TransactionMetadatum>;
-
-  /**
-  * @param {TransactionMetadatum} key
-  * @returns {Promise<TransactionMetadatum | undefined>}
-  */
-  get(key: TransactionMetadatum): Promise<TransactionMetadatum | undefined>;
-
-  /**
-  * @returns {Promise<MetadataList>}
-  */
-  keys(): Promise<MetadataList>;
 }
 
 
-export class MetadataList extends Ptr {
-  /**
-  * @returns {Promise<MetadataList>}
-  */
-  static new(): Promise<MetadataList>;
-
-  /**
-  * @returns {Promise<number>}
-  */
-  len(): Promise<number>;
-
-  /**
-  * @param {number} index
-  * @returns {Promise<TransactionMetadatum>}
-  */
-  get(index: number): Promise<TransactionMetadatum>;
-
-  /**
-  * @param {TransactionMetadatum} item
-  * @returns {Promise<void>}
-  */
-  add(item: TransactionMetadatum): Promise<void>;
-}
-
-export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
-}
-
-export class TransactionMetadatum extends Ptr {
-  /**
-  * @returns {Promise<Uint8Array>}
-  */
-  to_bytes(): Promise<Uint8Array>;
-
-  /**
-  * @param {Uint8Array} bytes
-  * @returns {Promise<TransactionMetadatum>}
-  */
-  static from_bytes(bytes: Uint8Array): Promise<TransactionMetadatum>;
-}
-
-export type TransactionMetadatumLabel = BigNum;
-
-export class TransactionMetadatumLabels extends Ptr {
-  /**
-  * @returns {Promise<Uint8Array>}
-  */
-  to_bytes(): Promise<Uint8Array>;
-
-  /**
-  * @param {Uint8Array} bytes
-  * @returns {Promise<TransactionMetadatumLabels>}
-  */
-  static from_bytes(bytes: Uint8Array): Promise<TransactionMetadatumLabels>;
-
-  /**
-  * @returns {Promise<TransactionMetadatumLabels>}
-  */
-  static new(): Promise<TransactionMetadatumLabels>;
-
-  /**
-  * @returns {Promise<number>}
-  */
-  len(): Promise<number>;
-
-  /**
-  * @param {number} index
-  * @returns {Promise<TransactionMetadatumLabel>}
-  */
-  get(index: number): Promise<TransactionMetadatumLabel>;
-
-  /**
-  * @param {TransactionMetadatumLabel} item
-  * @returns {Promise<void>}
-  */
-  add(item: TransactionMetadatumLabel): Promise<void>;
-}
-
-export class GeneralTransactionMetadata extends Ptr {
-  /**
-  * @returns {Promise<Uint8Array>}
-  */
-  to_bytes(): Promise<Uint8Array>
-
-  /**
-  * @param {Uint8Array} bytes
-  * @returns {Promise<GeneralTransactionMetadata>}
-  */
-  static from_bytes(bytes: Uint8Array): Promise<GeneralTransactionMetadata>;
-
-  /**
-  * @returns {Promise<GeneralTransactionMetadata>}
-  */
-  static new(): Promise<GeneralTransactionMetadata>;
-
-  /**
-  * @returns {Promise<number>}
-  */
-  len(): Promise<number>;
-
-  /**
-  * @param {TransactionMetadatumLabel} key
-  * @param {TransactionMetadatum} value
-  * @returns {Promise<TransactionMetadatum | undefined>}
-  */
-  insert(
-    key: TransactionMetadatumLabel,
-    value: TransactionMetadatum,
-  ): Promise<TransactionMetadatum | undefined>;
-
-  /**
-  * @param {TransactionMetadatumLabel} key
-  * @returns {Promise<TransactionMetadatum | undefined>}
-  */
-  get(key: TransactionMetadatumLabel): Promise<TransactionMetadatum | undefined>;
-
-  /**
-  * @returns {Promise<TransactionMetadatumLabels>}
-  */
-  keys(): Promise<TransactionMetadatumLabels>;
-}
-
-export class TransactionMetadata extends Ptr {
-  /**
-  * @param {GeneralTransactionMetadata} general
-  * @returns {Promise<TransactionMetadata>}
-  */
-  static new(general: GeneralTransactionMetadata): Promise<TransactionMetadata>;
-}
-
-export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
-}
+export const make_daedalus_bootstrap_witness: (
+  txBodyHash: TransactionHash,
+  addr: ByronAddress,
+  key: LegacyDaedalusPrivateKey,
+) => Promise<BootstrapWitness>
